@@ -39,7 +39,7 @@ std::vector<std::string> TNgramSearcher::Search(const std::string& query, size_t
         return searchResults;
     }
 
-    std::sort(results.begin(), results.begin(), [](const TStringPtrSet* a, const TStringPtrSet* b) {
+    std::sort(results.begin(), results.end(), [](const TStringPtrSet* a, const TStringPtrSet* b) {
         return a->size() < b->size();
     });
     const TStringPtrSet* baseResult = results[0];
