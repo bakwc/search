@@ -6,6 +6,7 @@
 
 #include "n_gram_searcher.h"
 #include "stupid_searcher.h"
+#include "suffix_tree_searcher.h"
 
 using namespace std;
 
@@ -111,11 +112,11 @@ void SearcherBench(ISearcher* searcher) {
 }
 
 int main() {
-    TNgramSearcher searcher(12);
+//    TNgramSearcher searcher(12);
 //    TStupidSearcher searcher;
+    TSuffixTreeSearcher searcher;
     SearcherUT(&searcher);
     SearcherBench(&searcher);
 
     return 0;
 }
-
