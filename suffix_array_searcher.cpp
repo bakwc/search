@@ -61,6 +61,7 @@ std::vector<std::string> TSuffixArraySearcher::Search(const std::string& query, 
         }
     }
     std::vector<std::string> results;
+    results.reserve(resultsSet.size());
     for (auto&& e: resultsSet) {
         results.push_back(*e);
     }

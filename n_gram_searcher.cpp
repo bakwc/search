@@ -23,6 +23,7 @@ void TNgramSearcher::Del(const std::string& document) {
 
 std::vector<std::string> TNgramSearcher::Search(const std::string& query, size_t resultsNumber) {
     std::vector<const TStringPtrSet*> results;
+    results.reserve(resultsNumber);
     int ngrams = std::min(NGrams, (int)query.size());
 
     for (int j = 0; j <= int(query.size()) - ngrams; ++j) {
@@ -37,6 +38,8 @@ std::vector<std::string> TNgramSearcher::Search(const std::string& query, size_t
     if (results.empty()) {
         return searchResults;
     }
+
+    searchResults.reserve(results.size());
 
     std::sort(results.begin(), results.end(), [](const TStringPtrSet* a, const TStringPtrSet* b) {
         return a->size() < b->size();
