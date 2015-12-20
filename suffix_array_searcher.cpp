@@ -20,6 +20,11 @@ void TSuffixArraySearcher::Prepare() {
     });
 }
 
+inline bool startsWith(const std::string& haystack, const std::string& needle) {
+    return needle.length() <= haystack.length()
+        && std::equal(needle.begin(), needle.end(), haystack.begin());
+}
+
 std::vector<std::string> TSuffixArraySearcher::Search(const std::string& query, size_t resultsNumber) {
     long long first = 0;
     long long last = Index.size();
@@ -37,7 +42,7 @@ std::vector<std::string> TSuffixArraySearcher::Search(const std::string& query, 
     std::unordered_set<const std::string*> resultsSet;
     for (int i = mid + 1; i < Index.size(); ++i) {
         const TIndexElement& e = Index[i];
-        if (e.second.find(query) == std::string::npos) {
+        if (!startsWith(e.second, query)) {
             break;
         }
         resultsSet.insert(e.first);
@@ -47,7 +52,7 @@ std::vector<std::string> TSuffixArraySearcher::Search(const std::string& query, 
     }
     for (int i = mid; i >= 0; --i) {
         const TIndexElement& e = Index[i];
-        if (e.second.find(query) == std::string::npos) {
+        if (!startsWith(e.second, query)) {
             break;
         }
         resultsSet.insert(e.first);

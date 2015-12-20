@@ -59,7 +59,7 @@ std::vector<std::string> LoadWords() {
 constexpr int DOCUMENTS_NUMBER = 100000;
 
 void SearcherChecker(ISearcher* baseSearcher, ISearcher* searcher) {
-    SearcherUT(searcher);
+//    SearcherUT(searcher);
 
     std::cerr << "[INFO] Loading words\n";
     std::vector<std::string> words = LoadWords();
@@ -112,11 +112,18 @@ void SearcherChecker(ISearcher* baseSearcher, ISearcher* searcher) {
 
         if (baseResultsSet.size() != resultsSet.size()) {
             std::cerr << "[ERROR] baseSearcher and searcher results size missmatch, " << query << "\n";
+            std::cerr << baseResultsSet.size() << " " << resultsSet.size() << "\n";
         }
 
-        for (auto&& r: baseResults) {
+        for (auto&& r: baseResultsSet) {
             if (resultsSet.find(r) == resultsSet.end()) {
                 std::cerr << "[ERROR] missing " << r << " in results, query: " << query << "\n";
+            }
+        }
+
+        for (auto&& r: resultsSet) {
+            if (baseResultsSet.find(r) == baseResultsSet.end()) {
+                std::cerr << "[ERROR] wrong result " << r << " in results, query: " << query << "\n";
             }
         }
     }
