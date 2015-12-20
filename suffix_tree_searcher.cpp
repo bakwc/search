@@ -17,9 +17,9 @@ void TSuffixTreeSearcher::Del(const std::string& document) {
 
 std::vector<std::string> TSuffixTreeSearcher::Search(const std::string& query, size_t resultsNumber) {
     std::vector<std::string> results;
-    const std::vector<const void*> baseResults = SuffixTree.Search(query, resultsNumber);
-    for (size_t i = 0; i < baseResults.size(); ++i) {
-        results.push_back(*(const std::string*)baseResults[i]);
+    const std::unordered_set<const void*> baseResults = SuffixTree.Search(query, resultsNumber);
+    for (auto&& e: baseResults) {
+        results.push_back(*(const std::string*)e);
     }
     return results;
 }
@@ -37,11 +37,11 @@ void TSuffixTreeNode::Add(const std::string& substring, const void* element) {
     child->Add(substring.substr(1), element);
 }
 
-std::vector<const void*> TSuffixTreeNode::Search(const std::string& substring, size_t resultsNumber) {
-    std::vector<const void*> results;
+std::unordered_set<const void*> TSuffixTreeNode::Search(const std::string& substring, size_t resultsNumber) {
+    std::unordered_set<const void*> results;
     if (substring.empty()) {
         for (auto&& e: Elements) {
-            results.push_back(e);
+            results.insert(e);
             if (results.size() >= resultsNumber) {
                 return results;
             }
@@ -49,7 +49,7 @@ std::vector<const void*> TSuffixTreeNode::Search(const std::string& substring, s
         for (auto&& c: Children) {
             auto&& r = c.second->Search(substring, resultsNumber - results.size());
             for (auto&& e: r) {
-                results.push_back(e);
+                results.insert(e);
                 if (results.size() >= resultsNumber) {
                     return results;
                 }
