@@ -1,6 +1,5 @@
 #include "suffix_array_searcher.h"
 
-#include <iostream>
 
 void TSuffixArraySearcher::Add(const std::string& document) {
     TStringPtr ptr(new std::string(document));
@@ -35,19 +34,30 @@ std::vector<std::string> TSuffixArraySearcher::Search(const std::string& query, 
             break;
         }
     }
-    std::vector<std::string> results;
-    for (size_t i = first; i < Index.size(); ++i) {
+    std::unordered_set<const std::string*> resultsSet;
+    for (int i = mid + 1; i < Index.size(); ++i) {
         const TIndexElement& e = Index[i];
         if (e.second.find(query) == std::string::npos) {
-            if (i == first) {
-                continue;
-            }
             break;
         }
-        results.push_back(*e.first);
-        if (results.size() >= resultsNumber) {
+        resultsSet.insert(e.first);
+        if (resultsSet.size() >= resultsNumber) {
             break;
         }
+    }
+    for (int i = mid; i >= 0; --i) {
+        const TIndexElement& e = Index[i];
+        if (e.second.find(query) == std::string::npos) {
+            break;
+        }
+        resultsSet.insert(e.first);
+        if (resultsSet.size() >= resultsNumber) {
+            break;
+        }
+    }
+    std::vector<std::string> results;
+    for (auto&& e: resultsSet) {
+        results.push_back(*e);
     }
     return results;
 }

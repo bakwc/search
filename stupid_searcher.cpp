@@ -1,5 +1,6 @@
 #include "stupid_searcher.h"
 
+
 void TStupidSearcher::Add(const std::string& document) {
     Words.push_back(document);
 }

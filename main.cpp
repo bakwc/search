@@ -59,6 +59,8 @@ std::vector<std::string> LoadWords() {
 constexpr int DOCUMENTS_NUMBER = 100000;
 
 void SearcherChecker(ISearcher* baseSearcher, ISearcher* searcher) {
+    SearcherUT(searcher);
+
     std::cerr << "[INFO] Loading words\n";
     std::vector<std::string> words = LoadWords();
     std::cerr << "[INFO] Loaded " << words.size() << " words\n";
@@ -101,25 +103,26 @@ void SearcherChecker(ISearcher* baseSearcher, ISearcher* searcher) {
     std::cerr << "[INFO] Start checking, queries: " << queries.size() << "\n";
 
     for (size_t i = 0; i < queries.size(); ++i) {
-        std::vector<std::string> baseResults = baseSearcher->Search(queries[i], documents.size() + 1);
+        std::string query = queries[i];
+        std::vector<std::string> baseResults = baseSearcher->Search(query, documents.size() + 1);
         std::unordered_set<std::string> baseResultsSet(baseResults.begin(), baseResults.end());
 
-        std::vector<std::string> results = searcher->Search(queries[i], documents.size() + 1);
+        std::vector<std::string> results = searcher->Search(query, documents.size() + 1);
         std::unordered_set<std::string> resultsSet(results.begin(), results.end());
 
         if (baseResultsSet.size() != resultsSet.size()) {
-            std::cerr << "[ERROR] baseSearcher and searcher results size missmatch, " << queries[i] << "\n";
+            std::cerr << "[ERROR] baseSearcher and searcher results size missmatch, " << query << "\n";
         }
 
         for (auto&& r: baseResults) {
             if (resultsSet.find(r) == resultsSet.end()) {
-                std::cerr << "[ERROR] missing " << r << " in results, query: " << queries[i] << "\n";
+                std::cerr << "[ERROR] missing " << r << " in results, query: " << query << "\n";
             }
         }
     }
 }
 
-void SearcherBench(ISearcher* searcher) {
+void SearcherBench(std::vector<std::pair<std::string, ISearcher*>> searchers) {
     std::cerr << "[INFO] Loading words\n";
     std::vector<std::string> words = LoadWords();
     std::cerr << "[INFO] Loaded " << words.size() << " words\n";
@@ -154,41 +157,46 @@ void SearcherBench(ISearcher* searcher) {
 
     std::cerr << "[INFO] Prepare index\n";
     for (size_t i = 0; i < documents.size(); ++i) {
-        searcher->Add(documents[i]);
-    }
-    searcher->Prepare();
-    std::cerr << "[INFO] Start searching, queries: " << queries.size() << "\n";
-
-    auto begin = std::chrono::high_resolution_clock::now();
-
-    int totalSize = 0;
-    int totalQueries = 0;
-
-    for (size_t n = 0; n < 300; ++n) {
-        totalQueries += queries.size();
-        for (size_t i = 0; i < queries.size(); ++i) {
-            totalSize += searcher->Search(queries[i], 10).size();
+        for (auto&& s: searchers) {
+            s.second->Add(documents[i]);
         }
     }
+    for (auto&& s: searchers) {
+        s.second->Prepare();
+    }
+    std::cerr << "[INFO] Start searching, queries: " << queries.size() << "\n";
 
-    auto end = std::chrono::high_resolution_clock::now();
-    size_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
+    for (auto&& s: searchers) {
+        auto begin = std::chrono::high_resolution_clock::now();
 
-    std::cerr << "[INFO] Done, results: " << totalSize << " / " << totalQueries << " in " << ms << " ms, " << int(float(totalQueries) / ms * 1000.0) << "\n";
+        int totalSize = 0;
+        int totalQueries = 0;
+
+        for (size_t n = 0; n < 300; ++n) {
+            totalQueries += queries.size();
+            for (size_t i = 0; i < queries.size(); ++i) {
+                totalSize += s.second->Search(queries[i], 10).size();
+            }
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        size_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count();
+
+        std::cerr << "[INFO] " << s.first << ": " << totalSize << " / " << totalQueries << " in " << ms << " ms, " << int(float(totalQueries) / ms * 1000.0) << "\n";
+    }
 }
 
 int main() {
-    TStupidSearcher baseSearcher;
-    TSuffixTreeSearcher searcher;
-
-    SearcherChecker(&baseSearcher, &searcher);
-
-//    TNgramSearcher searcher(12);
-//    TStupidSearcher searcher;
-//    TSuffixTreeSearcher searcher;
+//    TStupidSearcher baseSearcher;
 //    TSuffixArraySearcher searcher;
-//    SearcherUT(&searcher);
-//    SearcherBench(&searcher);
+//    SearcherChecker(&baseSearcher, &searcher);
+
+    TNgramSearcher nGramSearcher(12);
+    TSuffixTreeSearcher suffixTreeSearcher;
+    TSuffixArraySearcher suffixArraySearcher;
+    SearcherBench({{"n-gram", &nGramSearcher},
+                   {"suffix tree", &suffixTreeSearcher},
+                   {"suffix array", &suffixArraySearcher}});
 
     return 0;
 }

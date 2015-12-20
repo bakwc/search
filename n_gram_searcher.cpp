@@ -1,6 +1,5 @@
 #include "n_gram_searcher.h"
 
-#include <iostream>
 
 TNgramSearcher::TNgramSearcher(int ngrams)
     : NGrams(ngrams)

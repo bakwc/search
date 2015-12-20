@@ -1,6 +1,5 @@
 #include "suffix_tree_searcher.h"
 
-#include <iostream>
 
 void TSuffixTreeSearcher::Add(const std::string& document) {
     TStringPtr ptr(new std::string(document));
